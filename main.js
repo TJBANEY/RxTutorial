@@ -50,3 +50,100 @@ var responseStream = requestStream
 // ---- a ---- b ---- c ----------- <= Request events happening on requestStream
 // -------- A ---- B ------ C ----- <= Response events happening on flattened responseStream
 
+// ^^^^^^^^^^ 'Watch' the response stream for any response events (A, B, C)
+
+responseStream.subscribe(function(response) {
+  // render `response` to the DOM however you wish
+});
+
+// Create a stream of click events on '<button class="refresh"></button>'
+
+var refreshButton = document.querySelector('.refresh');
+var refreshClickStream = Rx.Observable.fromEvent(refreshButton, 'click');
+
+var requestStream = refreshClickStream
+  .map(function() {
+    var randomOffset = Math.floor(Math.random()*500);
+    return 'https://api.github.com/users?since=' + randomOffset;
+  });
+
+// ----- Click ----- Click ---- 
+/*            MAP()          */
+/* Turns click events into Requests */
+// ------ URL ------- URL -----
+
+
+// One stream is created on click, and one is created on page load
+
+// var startupRequestStream = Rx.Observable.just('https://api.github.com/users');
+
+
+
+
+/* THIS WILL MERGE THE TWO INTO ONE STREAM */
+
+// -- a --------- b ----- c ----
+// ------ A -- B ----- C -------
+// -- a - A -- B - b - C - c ---
+
+var requestOnRefreshStream = refreshClickStream
+  .map(function() {
+    var randomOffset = Math.floor(Math.random()*500);
+    return 'https://api.github.com/users?since=' + randomOffset;
+  });
+
+var startupRequestStream = Rx.Observable.just('https://api.github.com/users');
+
+var requestStream = Rx.Observable.merge(
+  requestOnRefreshStream, startupRequestStream
+);
+
+// OR THE CLEANER WAY
+
+var requestStream = refreshClickStream
+  .map(function() {
+    var randomOffset = Math.floor(Math.random()*500);
+    return 'https://api.github.com/users?since=' + randomOffset;
+  })
+  .merge(Rx.Observable.just('https://api.github.com/users'));
+
+// EVEN SHORTER
+
+var requestStream = refreshClickStream
+  .map(function() {
+    var randomOffset = Math.floor(Math.random()*500);
+    return 'https://api.github.com/users?since=' + randomOffset;
+  })
+  .startWith('https://api.github.com/users');
+
+// MORE DRY
+
+var requestStream = refreshClickStream.startWith('startup click')
+  .map(function() {
+    var randomOffset = Math.floor(Math.random()*500);
+    return 'https://api.github.com/users?since=' + randomOffset;
+  });
+
+
+
+// Button click stream does can only affect the suggestion UI if we subscribe to it
+// Since we are already changing the UI in the response stream subscription, there would
+// be two subscriptions which is bad.
+
+var suggestion1Stream = responseStream
+  .map(function(listUsers) {
+    // get one random user from the list
+    return listUsers[Math.floor(Math.random()*listUsers.length)];
+  });
+
+var suggestion2Stream = responseStream
+  .map(function(listUsers) {
+    // get one random user from the list
+    return listUsers[Math.floor(Math.random()*listUsers.length)];
+  });
+
+var suggestion3Stream = responseStream
+  .map(function(listUsers) {
+    // get one random user from the list
+    return listUsers[Math.floor(Math.random()*listUsers.length)];
+  });
