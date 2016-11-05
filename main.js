@@ -28,3 +28,25 @@ requestStream.subscribe(function(requestUrl) {
 	Promises can be observeable streams as well
 	var stream = Rx.Observable.fromPromise(promise) 
 */
+
+var responseMetastream = requestStream
+  .map(function(requestUrl) {
+    return Rx.Observable.fromPromise(jQuery.getJSON(requestUrl));
+  });
+
+// Map takes an emmited value, and passes it through a function
+// Meta Stream = A stream of 'pointers' to other streams
+
+/* Flat Map is a way to 'flatten' a metastream, back into a simple stream */
+
+var responseStream = requestStream
+  .flatMap(function(requestUrl) {
+    return Rx.Observable.fromPromise(jQuery.getJSON(requestUrl));
+  });
+
+// With many url requests happening, this way we will get all the corresponding events 
+// from those requests in the flatmap stream
+
+// ---- a ---- b ---- c ----------- <= Request events happening on requestStream
+// -------- A ---- B ------ C ----- <= Response events happening on flattened responseStream
+
