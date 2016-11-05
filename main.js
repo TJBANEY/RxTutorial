@@ -147,3 +147,30 @@ var suggestion3Stream = responseStream
     // get one random user from the list
     return listUsers[Math.floor(Math.random()*listUsers.length)];
   });
+
+
+var suggestion1Stream = responseStream
+  .map(function(listUsers) {
+    // get one random user from the list
+    return listUsers[Math.floor(Math.random()*listUsers.length)];
+  })
+  .merge(
+    refreshClickStream.map(function(){ return null; })
+  );
+
+suggestion1Stream.subscribe(function(suggestion) {
+  if (suggestion === null) {
+    // hide the first suggestion DOM element
+  }
+  else {
+    // show the first suggestion DOM element
+    // and render the data
+  }
+});
+
+// refreshClickStream: ----------o--------o---->
+//     requestStream: -r--------r--------r---->
+//    responseStream: ----R---------R------R-->   
+// suggestion1Stream: ----s-----N---s----N-s-->
+// suggestion2Stream: ----q-----N---q----N-q-->
+// suggestion3Stream: ----t-----N---t----N-t-->
